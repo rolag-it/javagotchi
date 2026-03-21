@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JAVAGOTCHI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f5f0;
+    --gray: #888;
+    --pixel: 'Press Start 2P', monospace;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--pixel);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* scanline overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .shell {
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ─── header ─── */
+  .hdr {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 2px solid var(--black);
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+  }
+  .hdr-title { font-size: 10px; letter-spacing: 2px; }
+  .hdr-ver   { font-size: 6px; color: var(--gray); }
+
+  /* ─── screen ─── */
+  .screen {
+    width: 280px;
+    height: 200px;
+    border: 3px solid var(--black);
+    position: relative;
+    overflow: hidden;
+    background: var(--white);
+    image-rendering: pixelated;
+  }
+
+  /* pixel grid texture */
+  .screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+    background-size: 4px 4px;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .screen-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  /* ─── sprite ─── */
+  .sprite {
+    font-size: 8px;
+    line-height: 1.4;
+    white-space: pre;
+    text-align: center;
+    color: var(--black);
+    transition: opacity 0.1s;
+    image-rendering: pixelated;
+  }
+  .sprite.blink { animation: spriteBlink 0.12s steps(1) 3; }
+  @keyframes spriteBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .sprite.bounce { animation: spriteBounce 0.3s ease-out; }
+  @keyframes spriteBounce { 0%{transform:translateY(0)} 40%{transform:translateY(-6px)} 100%{transform:translateY(0)} }
+
+  /* ─── status bar inside screen ─── */
+  .status-bar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 5px;
+    color: var(--black);
+    position: absolute;
+    bottom: 10px;
+    left: 12px;
+    right: 12px;
+    width: calc(100% - 24px);
+  }
+
+  .hp-bar-wrap {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 5px;
+  }
+  .hp-label { min-width: 14px; }
+  .hp-track {
+    flex: 1;
+    height: 5px;
+    border: 1px solid var(--black);
+    position: relative;
+  }
+  .hp-fill {
+    height: 100%;
+    background: var(--black);
+    transition: width 0.5s;
+  }
+  .hp-val { min-width: 22px; text-align: right; }
+
+  /* ─── message ticker ─── */
+  .ticker {
+    width: 280px;
+    height: 22px;
+    border-left: 3px solid var(--black);
+    border-right: 3px solid var(--black);
+    border-bottom: 3px solid var(--black);
+    background: var(--black);
+    color: var(--white);
+    font-size: 6px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .ticker-text {
+    white-space: nowrap;
+    animation: none;
+  }
+  .ticker-text.scroll {
+    animation: tickerScroll 4s linear forwards;
+  }
+  @keyframes tickerScroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-60%); }
+  }
+
+  /* ─── controls ─── */
+  .controls {
+    margin-top: 20px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .btn {
+    font-family: var(--pixel);
+    font-size: 6px;
+    background: var(--white);
+    color: var(--black);
+    border: 2px solid var(--black);
+    padding: 10px 4px;
+    cursor: pointer;
+    text-align: center;
+    line-height: 1.8;
+    transition: background 0.05s, color 0.05s, transform 0.05s;
+    user-select: none;
+    letter-spacing: 0;
+  }
+  .btn:hover { background: var(--black); color: var(--white); }
+  .btn:active { transform: scale(0.95); }
+  .btn:disabled {
+    color: var(--gray);
+    border-color: var(--gray);
+    cursor: not-allowed;
+    background: var(--white);
+  }
+  .btn-icon { display: block; font-size: 14px; margin-bottom: 3px; line-height: 1; }
+
+  /* ─── footer ─── */
+  .footer {
+    margin-top: 20px;
+    width: 100%;
+    border-top: 2px solid var(--black);
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 5px;
+    color: var(--gray);
+  }
+
+  /* ─── dead overlay ─── */
+  .dead-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--black);
+    color: var(--white);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    z-index: 20;
+    font-size: 7px;
+    text-align: center;
+    padding: 16px;
+  }
+  .dead-overlay.show { display: flex; }
+  .dead-overlay .rip { font-size: 10px; }
+
+  /* ─── intro overlay ─── */
+  .intro-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 20;
+    font-size: 7px;
+    text-align: center;
+    padding: 16px;
+  }
+  .intro-overlay.hide { display: none; }
+  .intro-title { font-size: 9px; }
+
+  /* cursor blink */
+  .cursor::after {
+    content: '_';
+    animation: cursorBlink 0.8s step-end infinite;
+  }
+  @keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="hdr">
+    <span class="hdr-title">JAVAGOTCHI</span>
+    <span class="hdr-ver">v0.0.1</span>
+  </div>
+
+  <div class="screen">
+    <!-- HP bar -->
+    <div class="hp-bar-wrap">
+      <span class="hp-label">HP</span>
+      <div class="hp-track"><div class="hp-fill" id="hpFill" style="width:0%"></div></div>
+      <span class="hp-val" id="hpVal">---</span>
+    </div>
+
+    <!-- sprite -->
+    <div class="screen-inner">
+      <div class="sprite" id="sprite"></div>
+    </div>
+
+    <!-- status bar -->
+    <div class="status-bar">
+      <span id="statName">--------</span>
+      <span id="statAge">AGE ---s</span>
+    </div>
+
+    <!-- intro overlay -->
+    <div class="intro-overlay" id="introOverlay">
+      <div class="intro-title">NO CREATURE</div>
+      <div>press CREATE<br>to begin</div>
+    </div>
+
+    <!-- dead overlay -->
+    <div class="dead-overlay" id="deadOverlay">
+      <div class="rip">R.I.P.</div>
+      <div id="deadName"></div>
+      <div>press CREATE<br>for new life</div>
+    </div>
+  </div>
+
+  <div class="ticker">
+    <span class="ticker-text" id="ticker">WELCOME TO JAVAGOTCHI &nbsp; PRESS CREATE TO START &nbsp;</span>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="btnCreate" onclick="doCreate()">
+      <span class="btn-icon">✦</span>CREATE
+    </button>
+    <button class="btn" id="btnFeed" onclick="doFeed()" disabled>
+      <span class="btn-icon">◈</span>FEED
+    </button>
+    <button class="btn" id="btnVisit" onclick="doVisit()" disabled>
+      <span class="btn-icon">◉</span>VISIT
+    </button>
+  </div>
+
+  <div class="footer">
+    <span id="footerLeft">READY</span>
+    <span id="footerRight" class="cursor"></span>
+  </div>
+
+</div>
+
+<script>
+// ─── Sprites (pixel art in ASCII) ───────────────────────────────────────────
+const SPRITES = {
+  happy: [
+    ' /\\_/\\ ',
+    '( ^w^ )',
+    ' (>♥<) ',
+    '  u u  '
+  ],
+  neutral: [
+    ' /\\_/\\ ',
+    '( -.- )',
+    ' (> <) ',
+    '  u u  '
+  ],
+  hungry: [
+    ' /\\_/\\ ',
+    '( o.o )',
+    ' (>~<) ',
+    '  u u  '
+  ],
+  sick: [
+    ' /\\_/\\ ',
+    '( x.x )',
+    ' (> <) ',
+    '  u u  '
+  ],
+  sleeping: [
+    ' /\\_/\\ ',
+    '( -.- )',
+    ' (>z<) ',
+    '  u u  '
+  ],
+  dead: [
+    ' /\\_/\\ ',
+    '( x x )',
+    ' / . \\ ',
+    '  ___  '
+  ],
+  empty: [
+    '  ???  ',
+    ' (   ) ',
+    '  ???  ',
+    '       '
+  ]
+};
+
+// ─── State ───────────────────────────────────────────────────────────────────
+const API = '/javagotchi';
+let state = { alive: false, exists: false, name: '', health: 0, age: 0, hungry: true };
+let pollTimer = null;
+let ageTimer = null;
+let localAge = 0;
+
+// ─── DOM refs ────────────────────────────────────────────────────────────────
+const elSprite      = document.getElementById('sprite');
+const elHpFill      = document.getElementById('hpFill');
+const elHpVal       = document.getElementById('hpVal');
+const elStatName    = document.getElementById('statName');
+const elStatAge     = document.getElementById('statAge');
+const elTicker      = document.getElementById('ticker');
+const elFooterLeft  = document.getElementById('footerLeft');
+const elFooterRight = document.getElementById('footerRight');
+const elIntro       = document.getElementById('introOverlay');
+const elDead        = document.getElementById('deadOverlay');
+const elDeadName    = document.getElementById('deadName');
+const btnCreate     = document.getElementById('btnCreate');
+const btnFeed       = document.getElementById('btnFeed');
+const btnVisit      = document.getElementById('btnVisit');
+
+// ─── Sprite logic ────────────────────────────────────────────────────────────
+function pickSprite(data) {
+  if (!data || !data.alive) return 'dead';
+  if (data.health <= 20) return 'sick';
+  if (data.hungry) return 'hungry';
+  if (data.health >= 80) return 'happy';
+  return 'neutral';
+}
+
+function renderSprite(key, anim) {
+  const lines = SPRITES[key] || SPRITES.empty;
+  elSprite.textContent = lines.join('\n');
+  if (anim) {
+    elSprite.classList.remove(anim);
+    void elSprite.offsetWidth;
+    elSprite.classList.add(anim);
+    elSprite.addEventListener('animationend', () => elSprite.classList.remove(anim), { once: true });
+  }
+}
+
+// ─── HP bar ──────────────────────────────────────────────────────────────────
+const HP_MAX = 200;
+function renderHp(hp) {
+  const pct = Math.min(100, Math.max(0, Math.round((hp / HP_MAX) * 100)));
+  elHpFill.style.width = pct + '%';
+  elHpVal.textContent = String(hp).padStart(3, ' ');
+}
+
+// ─── Status bar ──────────────────────────────────────────────────────────────
+function renderStatus(data) {
+  elStatName.textContent = (data.name || '--------').substring(0, 8).toUpperCase();
+}
+
+// ─── Age ticker (local, increments every second) ─────────────────────────────
+function startAgeTimer(initialAge) {
+  clearInterval(ageTimer);
+  localAge = initialAge;
+  function fmt(s) {
+    if (s < 60) return s + 's';
+    if (s < 3600) return Math.floor(s / 60) + 'm' + (s % 60) + 's';
+    return Math.floor(s / 3600) + 'h' + Math.floor((s % 3600) / 60) + 'm';
+  }
+  elStatAge.textContent = 'AGE ' + fmt(localAge);
+  ageTimer = setInterval(() => {
+    localAge++;
+    elStatAge.textContent = 'AGE ' + fmt(localAge);
+  }, 1000);
+}
+
+// ─── Ticker message ──────────────────────────────────────────────────────────
+function setTicker(msg) {
+  elTicker.classList.remove('scroll');
+  elTicker.textContent = msg;
+  void elTicker.offsetWidth;
+  elTicker.classList.add('scroll');
+}
+
+// ─── Footer ──────────────────────────────────────────────────────────────────
+function setFooter(left, right) {
+  elFooterLeft.textContent = left || '';
+  elFooterRight.textContent = right || '';
+}
+
+// ─── Overlays ────────────────────────────────────────────────────────────────
+function showIntro()  { elIntro.classList.remove('hide'); elDead.classList.remove('show'); }
+function hideIntro()  { elIntro.classList.add('hide'); }
+function showDead(name) {
+  elDead.classList.add('show');
+  elDeadName.textContent = (name || 'CREATURE').toUpperCase() + ' IS GONE';
+}
+function hideDead()   { elDead.classList.remove('show'); }
+
+// ─── Button states ───────────────────────────────────────────────────────────
+function setBtns(hasCreature) {
+  btnFeed.disabled  = !hasCreature;
+  btnVisit.disabled = !hasCreature;
+}
+
+// ─── Render full state ───────────────────────────────────────────────────────
+function applyData(data, anim) {
+  state = { ...state, ...data, exists: true };
+  hideIntro();
+
+  if (!data.alive) {
+    clearInterval(ageTimer);
+    clearInterval(pollTimer);
+    renderSprite('dead');
+    renderHp(0);
+    showDead(data.name);
+    setBtns(false);
+    setFooter('DECEASED', '');
+    return;
+  }
+
+  hideDead();
+  renderSprite(pickSprite(data), anim);
+  renderHp(data.health);
+  renderStatus(data);
+  startAgeTimer(data.age);
+  setBtns(true);
+
+  const mood = data.hungry ? 'HUNGRY' : (data.health >= 80 ? 'HAPPY' : 'OK');
+  setFooter(mood, data.hungry ? '! FEED ME' : '');
+}
+
+// ─── API calls ───────────────────────────────────────────────────────────────
+async function api(method) {
+  const resp = await fetch(API, { method, headers: { Accept: 'application/json' } });
+  if (!resp.ok) {
+    const body = await resp.json().catch(() => ({}));
+    throw { status: resp.status, message: body.message || resp.statusText };
+  }
+  return resp.json();
+}
+
+async function doVisit() {
+  setFooter('VISITING...', '');
+  try {
+    const data = await api('GET');
+    applyData(data);
+    setTicker(data.name.toUpperCase() + ' — HP:' + data.health + ' AGE:' + data.age + 's' + (data.hungry ? ' — HUNGRY!' : ' — FED'));
+  } catch (e) {
+    if (e.status === 404) { showIntro(); setBtns(false); clearInterval(pollTimer); setFooter('NO CREATURE', ''); }
+    else if (e.status === 410) { showDead(state.name); setBtns(false); clearInterval(pollTimer); setFooter('DECEASED', ''); }
+    else { setFooter('ERR ' + e.status, ''); }
+    setTicker((e.message || 'ERROR').toUpperCase());
+  }
+}
+
+async function doCreate() {
+  setFooter('CREATING...', '');
+  hideDead(); hideIntro();
+  try {
+    const data = await api('POST');
+    applyData(data, 'bounce');
+    setTicker('WELCOME ' + data.name.toUpperCase() + '! HP:' + data.health);
+    startPoll();
+  } catch (e) {
+    if (e.status === 400) {
+      setTicker((e.message || 'ALREADY EXISTS').toUpperCase());
+      setFooter('EXISTS', '');
+      await doVisit();
+    } else {
+      setTicker((e.message || 'CANNOT CREATE').toUpperCase());
+      setFooter('ERR ' + e.status, '');
+    }
+  }
+}
+
+async function doFeed() {
+  setFooter('FEEDING...', '');
+  try {
+    const data = await api('PUT');
+    applyData(data, 'bounce');
+    setTicker(data.name.toUpperCase() + ' MUNCHES HAPPILY. HP:' + data.health);
+  } catch (e) {
+    if (e.status === 404) { showIntro(); setBtns(false); setFooter('NO CREATURE', ''); }
+    else if (e.status === 410) { showDead(state.name); setBtns(false); setFooter('DECEASED', ''); }
+    else { setFooter('SATED', ''); }
+    setTicker((e.message || 'CANNOT FEED').toUpperCase());
+  }
+}
+
+// ─── Poll every 30s ──────────────────────────────────────────────────────────
+function startPoll() {
+  clearInterval(pollTimer);
+  pollTimer = setInterval(doVisit, 30000);
+}
+
+// ─── Boot ────────────────────────────────────────────────────────────────────
+(async () => {
+  renderSprite('empty');
+  showIntro();
+  setFooter('CONNECTING...', '');
+  try {
+    const data = await api('GET');
+    applyData(data);
+    setTicker('WELCOME BACK ' + data.name.toUpperCase() + '! HP:' + data.health);
+    startPoll();
+  } catch (e) {
+    if (e.status === 410) {
+      showDead(state.name);
+      setBtns(false);
+      setTicker((e.message || 'CREATURE IS GONE').toUpperCase());
+    } else {
+      showIntro();
+      setBtns(false);
+      setTicker('NO CREATURE FOUND — PRESS CREATE');
+    }
+    setFooter('READY', '');
+  }
+})();
+</script>
+</body>
+</html>
