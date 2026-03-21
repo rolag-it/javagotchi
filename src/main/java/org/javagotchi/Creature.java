@@ -19,6 +19,8 @@ public class Creature {
 
     private final AtomicInteger health;
 
+    private final AtomicInteger meals;
+
     public static Creature newBorn(String name) {
         Creature creature = new Creature(name);
         creature.executor.scheduleAtFixedRate(creature::degrade, 2, 20, TimeUnit.MINUTES);
@@ -28,6 +30,7 @@ public class Creature {
     private Creature(String name) {
         this.name = name;
         this.health = new AtomicInteger(fortune.nextInt(64, 128));
+        this.meals = new AtomicInteger(0);
         this.birthInstant = Instant.now();
     }
 
@@ -37,6 +40,10 @@ public class Creature {
 
     public int getHealth() {
         return health.get();
+    }
+
+    public boolean isHungry() {
+        return meals.get() < 3;
     }
 
     public boolean isAlive() {
@@ -51,12 +58,18 @@ public class Creature {
         if (!isAlive()) {
             throw new IllegalStateException("%s is no more among us".formatted(name));
         }
+        if (!isHungry()) {
+            throw new IllegalStateException("%s is sated and does not want to eat".formatted(name));
+            
+        }
         int food = fortune.nextInt(8, 32);
         health.addAndGet(food);
+        meals.incrementAndGet();
     }
 
     private void degrade() {
         int damage = fortune.nextInt(-32, -8);
+        meals.set(0);
 
         if (health.addAndGet(damage) < 0) {
             executor.shutdownNow();

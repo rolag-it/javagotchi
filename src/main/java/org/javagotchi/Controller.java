@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/javagochi")
+@RequestMapping("/javagotchi")
 public class Controller {
     
     private final ConcurrentHashMap<String, Creature> farm = new ConcurrentHashMap<>();

@@ -16,15 +16,15 @@
 	<description>A digital creature to care for</description>
 	<url />
 	<licenses>
-		<license >
+		<license>
 			<name>GNU General Public License v2.0</name>
 			<url>https://opensource.org/license/gpl-2-0/</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
 	<developers>
-		<developer >
-			<id>https://github.com/rolag-it</id>			
+		<developer>
+			<id>https://github.com/rolag-it</id>
 		</developer>
 	</developers>
 	<scm>
@@ -44,7 +44,25 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-resttestclient</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-restclient</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 			<scope>test</scope>
 		</dependency>
 
