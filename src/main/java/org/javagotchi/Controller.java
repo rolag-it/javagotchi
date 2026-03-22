@@ -20,7 +20,7 @@ public class Controller {
 
     private final Set<String> names = Set.of(
         "Fluffy", "Sparky", "Buddy", "Mittens", "Charlie",
-        "Max", "Luna", "Rocky", "Bella", "Daisy", "Bort"
+        "Max", "Luna", "Rocky", "Bella", "Daisy", "Bort", "Scott"
     );
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)    
@@ -44,8 +44,13 @@ public class Controller {
     @PutMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Creature feed() {
         var creature = visit();        
-        creature.feed();
-        return creature;
+        try {
+            creature.feed();
+            return creature;
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, e.getMessage());
+        }
+                
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)

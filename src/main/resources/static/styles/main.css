@@ -1,0 +1,298 @@
+/*
+ * main.css — Javagotchi UI styles
+ *
+ * Design: pixel art retro, monochrome (black / white / gray).
+ * Font:   Press Start 2P (Google Fonts, loaded in index.html).
+ * Layout: centred shell, 640 × 480 screen, three-button controls.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* ── Reset ──────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Design tokens ──────────────────────────────────────────────── */
+:root {
+  --black:  #0a0a0a;
+  --white:  #f5f5f0;
+  --gray:   #aaa;
+  --pixel:  'Press Start 2P', monospace;
+}
+
+/* ── Page ───────────────────────────────────────────────────────── */
+html, body {
+  min-height: 100%;
+  background: var(--white);
+  color: var(--black);
+  font-family: var(--pixel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+/* scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent, transparent 2px,
+    rgba(0, 0, 0, 0.025) 2px, rgba(0, 0, 0, 0.025) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* ── Shell (outer wrapper) ──────────────────────────────────────── */
+.shell {
+  width: 660px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.hdr {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 2px solid var(--black);
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+}
+.hdr-title { font-size: 13px; letter-spacing: 3px; }
+.hdr-ver   { font-size: 7px;  color: var(--gray);  }
+
+/* ── Screen ─────────────────────────────────────────────────────── */
+.screen {
+  width: 640px;
+  height: 480px;
+  border: 3px solid var(--black);
+  position: relative;
+  overflow: hidden;
+  background: var(--white);
+}
+
+/* pixel grid texture */
+.screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 4px 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Ground line ────────────────────────────────────────────────── */
+.ground {
+  position: absolute;
+  bottom: 64px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--black);
+  z-index: 2;
+}
+
+/* ── Sprite canvas ──────────────────────────────────────────────── */
+#spriteCanvas {
+  position: absolute;
+  bottom: 96px;
+  left: 0;
+  image-rendering: pixelated;
+  z-index: 5;
+  width: 64px;
+  height: 64px;
+}
+
+/* ── HP bar ─────────────────────────────────────────────────────── */
+.hp-bar-wrap {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 8px;
+  z-index: 6;
+}
+.hp-label { min-width: 20px; }
+.hp-track {
+  flex: 1;
+  height: 8px;
+  border: 2px solid var(--black);
+}
+.hp-fill {
+  height: 100%;
+  background: var(--black);
+  transition: width 0.5s;
+}
+.hp-val {
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ── Status bar (bottom strip inside screen) ────────────────────── */
+.status-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  border-top: 2px solid var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  font-size: 9px;
+  z-index: 6;
+  background: var(--white);
+}
+
+/* ── Action hint ────────────────────────────────────────────────── */
+.action-hint {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 8px;
+  color: var(--black);
+  z-index: 6;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  letter-spacing: 1px;
+}
+.action-hint.show   { opacity: 1; }
+.action-hint.blink  { animation: hintBlink 0.5s step-end 4; }
+
+@keyframes hintBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Overlays ───────────────────────────────────────────────────── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  z-index: 20;
+  text-align: center;
+  padding: 32px;
+}
+.overlay.show { display: flex; }
+
+/* intro */
+.overlay-intro            { background: var(--white); }
+.overlay-intro .ov-title  { font-size: 16px; }
+.overlay-intro .ov-sub    { font-size: 9px; line-height: 2.2; color: var(--gray); }
+
+/* dead */
+.overlay-dead           { background: var(--black); color: var(--white); }
+.overlay-dead .rip      { font-size: 20px; }
+.overlay-dead .ov-sub   { font-size: 9px; line-height: 2.2; color: var(--gray); }
+
+/* ── Ticker / button labels ─────────────────────────────────────── */
+.ticker {
+  width: 640px;
+  height: 26px;
+  border-left: 3px solid var(--black);
+  border-right: 3px solid var(--black);
+  border-bottom: 3px solid var(--black);
+  background: var(--black);
+  color: var(--white);
+  font-size: 7px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  padding: 0 12px;
+  overflow: hidden;
+  gap: 12px;
+  justify-content: center;
+}
+.ticker-text {
+  white-space: nowrap;
+  display: inline-flex;
+  justify-content: center;
+  width: 205px;
+}
+.ticker-text.scroll { animation: tickerScroll 7s linear forwards; }
+
+@keyframes tickerScroll {
+  0%   { transform: translateX(0);    }
+  100% { transform: translateX(-55%); }
+}
+
+/* ── Controls (three buttons) ───────────────────────────────────── */
+.controls {
+  margin-top: 18px;
+  width: 640px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.btn {
+  font-family: var(--pixel);
+  background: var(--white);
+  border: 2px solid var(--black);
+  height: 52px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.05s, transform 0.05s;
+  user-select: none;
+}
+
+/* circle dot indicator */
+.btn::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--black);
+  display: block;
+  transition: border-color 0.05s;
+}
+.btn:hover:not(:disabled)        { background: var(--black); }
+.btn:hover:not(:disabled)::after { border-color: var(--white); }
+.btn:active:not(:disabled)       { transform: scale(0.96); }
+
+.btn:disabled         { border-color: var(--gray); cursor: not-allowed; }
+.btn:disabled::after  { border-color: var(--gray); }
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.footer {
+  margin-top: 14px;
+  width: 640px;
+  border-top: 2px solid var(--black);
+  padding-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 6px;
+  color: var(--gray);
+}
+
+/* blinking cursor used in footer */
+.cursor::after {
+  content: '_';
+  animation: cursorBlink 0.8s step-end infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
