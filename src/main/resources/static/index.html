@@ -12,59 +12,54 @@
   :root {
     --black: #0a0a0a;
     --white: #f5f5f0;
-    --gray: #888;
+    --gray: #aaa;
     --pixel: 'Press Start 2P', monospace;
   }
 
   html, body {
-    height: 100%;
+    min-height: 100%;
     background: var(--white);
     color: var(--black);
     font-family: var(--pixel);
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    padding: 24px 0;
   }
 
-  /* scanline overlay */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px
     );
     pointer-events: none;
     z-index: 999;
   }
 
   .shell {
-    width: 640px;
+    width: 660px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
   }
 
-  /* ─── header ─── */
+  /* ── header ── */
   .hdr {
     width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
     border-bottom: 2px solid var(--black);
-    padding-bottom: 8px;
-    margin-bottom: 20px;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
   }
-  .hdr-title { font-size: 10px; letter-spacing: 2px; }
-  .hdr-ver   { font-size: 6px; color: var(--gray); }
+  .hdr-title { font-size: 13px; letter-spacing: 3px; }
+  .hdr-ver   { font-size: 7px; color: var(--gray); }
 
-  /* ─── screen ─── */
+  /* ── screen ── */
   .screen {
     width: 640px;
     height: 480px;
@@ -72,198 +67,197 @@
     position: relative;
     overflow: hidden;
     background: var(--white);
-    image-rendering: pixelated;
   }
 
-  /* pixel grid texture */
+  /* pixel grid */
   .screen::before {
     content: '';
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+      linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
     background-size: 4px 4px;
     pointer-events: none;
     z-index: 10;
   }
 
-  .screen-inner {
+  /* ── ground ── */
+  .ground {
     position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px;
+    bottom: 64px;
+    left: 0; right: 0;
+    height: 2px;
+    background: var(--black);
+    z-index: 2;
   }
 
-  /* ─── sprite ─── */
-  .sprite {
-    font-size: 8px;
-    line-height: 1.4;
-    white-space: pre;
-    text-align: center;
-    color: var(--black);
-    transition: opacity 0.1s;
+  /* ── walking canvas ── */
+  #spriteCanvas {
+    position: absolute;
+    bottom: 96px;
+    left: 0;
     image-rendering: pixelated;
-  }
-  .sprite.blink { animation: spriteBlink 0.12s steps(1) 3; }
-  @keyframes spriteBlink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-  .sprite.bounce { animation: spriteBounce 0.3s ease-out; }
-  @keyframes spriteBounce { 0%{transform:translateY(0)} 40%{transform:translateY(-6px)} 100%{transform:translateY(0)} }
-
-  /* ─── status bar inside screen ─── */
-  .status-bar {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    font-size: 5px;
-    color: var(--black);
-    position: absolute;
-    bottom: 10px;
-    left: 12px;
-    right: 12px;
-    width: calc(100% - 24px);
+    z-index: 5;
+    width: 64px;
+    height: 64px;
   }
 
+  /* ── HP bar ── */
   .hp-bar-wrap {
     position: absolute;
-    top: 10px;
-    left: 12px;
-    right: 12px;
+    top: 16px;
+    left: 20px;
+    right: 20px;
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 5px;
+    gap: 8px;
+    font-size: 8px;
+    z-index: 6;
   }
-  .hp-label { min-width: 14px; }
+  .hp-label { min-width: 20px; }
   .hp-track {
     flex: 1;
-    height: 5px;
-    border: 1px solid var(--black);
-    position: relative;
+    height: 8px;
+    border: 2px solid var(--black);
   }
   .hp-fill {
     height: 100%;
     background: var(--black);
     transition: width 0.5s;
   }
-  .hp-val { min-width: 22px; text-align: right; }
+  .hp-val { min-width: 32px; text-align: right; }
 
-  /* ─── message ticker ─── */
+  /* ── status bar ── */
+  .status-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    border-top: 2px solid var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    font-size: 9px;
+    z-index: 6;
+    background: var(--white);
+  }
+
+  /* ── action hint ── */
+  .action-hint {
+    position: absolute;
+    bottom: 80px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 8px;
+    color: var(--black);
+    z-index: 6;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    letter-spacing: 1px;
+  }
+  .action-hint.show { opacity: 1; }
+  .action-hint.blink { animation: hintBlink 0.5s step-end 4; }
+  @keyframes hintBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ── overlays ── */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    z-index: 20;
+    text-align: center;
+    padding: 32px;
+  }
+  .overlay.show { display: flex; }
+
+  .overlay-intro { background: var(--white); }
+  .overlay-intro .ov-title { font-size: 16px; }
+  .overlay-intro .ov-sub   { font-size: 9px; line-height: 2.2; color: var(--gray); }
+
+  .overlay-dead { background: var(--black); color: var(--white); }
+  .overlay-dead .rip    { font-size: 20px; }
+  .overlay-dead .ov-sub { font-size: 9px; line-height: 2.2; color: var(--gray); }
+
+  /* ── ticker ── */
   .ticker {
     width: 640px;
-    height: 22px;
+    height: 26px;
     border-left: 3px solid var(--black);
     border-right: 3px solid var(--black);
     border-bottom: 3px solid var(--black);
     background: var(--black);
     color: var(--white);
-    font-size: 6px;
-    display: flex;
+    font-size: 7px;
+    display: grid;
     align-items: center;
-    padding: 0 8px;
+    padding: 0 12px;
     overflow: hidden;
-    position: relative;
+    justify-content: center;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
   }
-  .ticker-text {
-    white-space: nowrap;
-    animation: none;
-  }
-  .ticker-text.scroll {
-    animation: tickerScroll 4s linear forwards;
-  }
-  @keyframes tickerScroll {
-    0%   { transform: translateX(90%); }
-    100% { transform: translateX(0); }
-  }
+  .ticker-text { white-space: nowrap; display: inline-flex; justify-content: center; width: 205px; }
+  .ticker-text.scroll { animation: tickerScroll 7s linear forwards; }
+  @keyframes tickerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-55%)} }
 
-  /* ─── controls ─── */
+  /* ── controls ── */
   .controls {
-    margin-top: 20px;
-    width: 100%;
+    margin-top: 18px;
+    width: 640px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
+    gap: 12px;
   }
 
   .btn {
     font-family: var(--pixel);
-    font-size: 6px;
     background: var(--white);
-    color: var(--black);
     border: 2px solid var(--black);
-    padding: 10px 4px;
+    height: 52px;
     cursor: pointer;
-    text-align: center;
-    line-height: 1.8;
-    transition: background 0.05s, color 0.05s, transform 0.05s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.05s, transform 0.05s;
     user-select: none;
-    letter-spacing: 0;
+    position: relative;
   }
-  .btn:hover { background: var(--black); color: var(--white); }
-  .btn:active { transform: scale(0.95); }
+  /* circle dot indicator */
+  .btn::after {
+    content: '';
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--black);
+    display: block;
+    transition: background 0.05s, border-color 0.05s;
+  }
+  .btn:hover:not(:disabled)         { background: var(--black); }
+  .btn:hover:not(:disabled)::after  { border-color: var(--white); }
+  .btn:active:not(:disabled)        { transform: scale(0.96); }
   .btn:disabled {
-    color: var(--gray);
     border-color: var(--gray);
     cursor: not-allowed;
-    background: var(--white);
   }
-  .btn-icon { display: block; font-size: 14px; margin-bottom: 3px; line-height: 1; }
+  .btn:disabled::after { border-color: var(--gray); }
 
-  /* ─── footer ─── */
+  /* ── footer ── */
   .footer {
-    margin-top: 20px;
-    width: 100%;
+    margin-top: 14px;
+    width: 640px;
     border-top: 2px solid var(--black);
     padding-top: 8px;
     display: flex;
     justify-content: space-between;
-    font-size: 5px;
+    font-size: 6px;
     color: var(--gray);
   }
 
-  /* ─── dead overlay ─── */
-  .dead-overlay {
-    position: absolute;
-    inset: 0;
-    background: var(--black);
-    color: var(--white);
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    z-index: 20;
-    font-size: 7px;
-    text-align: center;
-    padding: 16px;
-  }
-  .dead-overlay.show { display: flex; }
-  .dead-overlay .rip { font-size: 10px; }
-
-  /* ─── intro overlay ─── */
-  .intro-overlay {
-    position: absolute;
-    inset: 0;
-    background: var(--white);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    z-index: 20;
-    font-size: 7px;
-    text-align: center;
-    padding: 16px;
-  }
-  .intro-overlay.hide { display: none; }
-  .intro-title { font-size: 9px; }
-
-  /* cursor blink */
   .cursor::after {
     content: '_';
     animation: cursorBlink 0.8s step-end infinite;
@@ -272,7 +266,6 @@
 </style>
 </head>
 <body>
-
 <div class="shell">
 
   <div class="hdr">
@@ -280,53 +273,50 @@
     <span class="hdr-ver">v0.0.1</span>
   </div>
 
-  <div class="screen">
-    <!-- HP bar -->
+  <div class="screen" id="screen">
+
     <div class="hp-bar-wrap">
       <span class="hp-label">HP</span>
       <div class="hp-track"><div class="hp-fill" id="hpFill" style="width:0%"></div></div>
       <span class="hp-val" id="hpVal">---</span>
     </div>
 
-    <!-- sprite -->
-    <div class="screen-inner">
-      <div class="sprite" id="sprite"></div>
-    </div>
+    <canvas id="spriteCanvas" width="64" height="64"></canvas>
 
-    <!-- status bar -->
+    <div class="ground"></div>
+
+    <div class="action-hint" id="actionHint"></div>
+
     <div class="status-bar">
       <span id="statName">--------</span>
-      <span id="statAge">AGE ---s</span>
+      <span id="statAge">AGE ---</span>
     </div>
 
     <!-- intro overlay -->
-    <div class="intro-overlay" id="introOverlay">
-      <div class="intro-title">NO CREATURE</div>
-      <div>press CREATE<br>to begin</div>
+    <div class="overlay overlay-intro show" id="introOverlay">
+      <div class="ov-title">NO CREATURE</div>
+      <div class="ov-sub">press LEFT BUTTON<br>to create one</div>
     </div>
 
     <!-- dead overlay -->
-    <div class="dead-overlay" id="deadOverlay">
+    <div class="overlay overlay-dead" id="deadOverlay">
       <div class="rip">R.I.P.</div>
-      <div id="deadName"></div>
-      <div>press CREATE<br>for new life</div>
+      <div id="deadName" style="font-size:10px"></div>
+      <div class="ov-sub">press LEFT BUTTON<br>for new life</div>
     </div>
+
   </div>
 
   <div class="ticker">
-    <span class="ticker-text" id="ticker">WELCOME TO JAVAGOTCHI &nbsp; PRESS CREATE TO START &nbsp;</span>
+    <span class="ticker-text" id="tickerLeft">Pet</span>
+    <span class="ticker-text" id="tickerCenter">Feed</span>
+    <span class="ticker-text" id="tickerRight">Play</span>
   </div>
 
   <div class="controls">
-    <button class="btn" id="btnCreate" onclick="doCreate()">
-      <span class="btn-icon">✦</span>PET
-    </button>
-    <button class="btn" id="btnFeed" onclick="doFeed()" disabled>
-      <span class="btn-icon">◈</span>FEED
-    </button>
-    <button class="btn" id="btnVisit" onclick="doVisit()" disabled>
-      <span class="btn-icon">◉</span>PLAY
-    </button>
+    <button class="btn" id="btnLeft"></button>
+    <button class="btn" id="btnCenter" disabled></button>
+    <button class="btn" id="btnRight"  disabled></button>
   </div>
 
   <div class="footer">
@@ -337,183 +327,335 @@
 </div>
 
 <script>
-// ─── Sprites (pixel art in ASCII) ───────────────────────────────────────────
-const SPRITES = {
-  happy: [
-    ' /\\_/\\ ',
-    '( ^w^ )',
-    ' (>♥<) ',
-    '  u u  '
+// ══════════════════════════════════════════════════════════════════
+// PIXEL SPRITES  8×8 grid drawn on canvas (PX = scale factor)
+// '#' = black  'g' = gray  '.' = transparent
+// ══════════════════════════════════════════════════════════════════
+const PX = 6; // 1 game-pixel = 6 css-px  →  8*6=48 inside 64px canvas
+
+const FRAMES = {
+  walkA: [
+    '..###...',
+    '.#####..',
+    '.#o.o#..',
+    '.#####..',
+    '..###...',
+    '.#####..',
+    '.##.##..',
+    '.#...#..'
   ],
-  neutral: [
-    ' /\\_/\\ ',
-    '( -.- )',
-    ' (> <) ',
-    '  u u  '
+  walkB: [
+    '..###...',
+    '.#####..',
+    '.#o.o#..',
+    '.#####..',
+    '..###...',
+    '.#####..',
+    '..###...',
+    '.#.#.#..'
+  ],
+  happy: [
+    '.#.###.#',
+    '..#####.',
+    '..#^.^#.',
+    '..#####.',
+    '...###..',
+    '..#####.',
+    '..#.#.#.',
+    '..#.#.#.'
   ],
   hungry: [
-    ' /\\_/\\ ',
-    '( o.o )',
-    ' (>~<) ',
-    '  u u  '
+    '..###...',
+    '.#####..',
+    '.#O.O#..',
+    '.##.##..',
+    '..#.#...',
+    '.#####..',
+    '.##.##..',
+    '.#...#..'
   ],
   sick: [
-    ' /\\_/\\ ',
-    '( x.x )',
-    ' (> <) ',
-    '  u u  '
-  ],
-  sleeping: [
-    ' /\\_/\\ ',
-    '( -.- )',
-    ' (>z<) ',
-    '  u u  '
+    '..###...',
+    '.#####..',
+    '.#X.X#..',
+    '.#####..',
+    '..###...',
+    '.#####..',
+    '.##.##..',
+    '.#...#..'
   ],
   dead: [
-    ' /\\_/\\ ',
-    '( x x )',
-    ' / . \\ ',
-    '  ___  '
+    '........',
+    '..###...',
+    '.#####..',
+    '.#X.X#..',
+    '.##.##..',
+    '..###...',
+    '........',
+    '........'
   ],
   empty: [
-    '  ???  ',
-    ' (   ) ',
-    '  ???  ',
-    '       '
+    '...#....',
+    '..###...',
+    '...#....',
+    '..###...',
+    '.#####..',
+    '..###...',
+    '...#....',
+    '........'
   ]
 };
 
-// ─── State ───────────────────────────────────────────────────────────────────
-const API = '/javagotchi';
-let state = { alive: false, exists: false, name: '', health: 0, age: 0, hungry: true };
-let pollTimer = null;
-let ageTimer = null;
-let localAge = 0;
+const canvas = document.getElementById('spriteCanvas');
+const ctx    = canvas.getContext('2d');
 
-// ─── DOM refs ────────────────────────────────────────────────────────────────
-const elSprite      = document.getElementById('sprite');
-const elHpFill      = document.getElementById('hpFill');
-const elHpVal       = document.getElementById('hpVal');
-const elStatName    = document.getElementById('statName');
-const elStatAge     = document.getElementById('statAge');
-const elTicker      = document.getElementById('ticker');
-const elFooterLeft  = document.getElementById('footerLeft');
-const elFooterRight = document.getElementById('footerRight');
-const elIntro       = document.getElementById('introOverlay');
-const elDead        = document.getElementById('deadOverlay');
-const elDeadName    = document.getElementById('deadName');
-const btnCreate     = document.getElementById('btnCreate');
-const btnFeed       = document.getElementById('btnFeed');
-const btnVisit      = document.getElementById('btnVisit');
-
-// ─── Sprite logic ────────────────────────────────────────────────────────────
-function pickSprite(data) {
-  if (!data || !data.alive) return 'dead';
-  if (data.health <= 20) return 'sick';
-  if (data.hungry) return 'hungry';
-  if (data.health >= 80) return 'happy';
-  return 'neutral';
-}
-
-function renderSprite(key, anim) {
-  const lines = SPRITES[key] || SPRITES.empty;
-  elSprite.textContent = lines.join('\n');
-  if (anim) {
-    elSprite.classList.remove(anim);
-    void elSprite.offsetWidth;
-    elSprite.classList.add(anim);
-    elSprite.addEventListener('animationend', () => elSprite.classList.remove(anim), { once: true });
+function drawSprite(key) {
+  const frame = FRAMES[key] || FRAMES.empty;
+  ctx.clearRect(0, 0, 64, 64);
+  const OFF = 8; // center 48px in 64px canvas
+  for (let r = 0; r < 8; r++) {
+    const line = (frame[r] || '........');
+    for (let c = 0; c < 8; c++) {
+      const ch = line[c];
+      if      (ch === '#') ctx.fillStyle = '#0a0a0a';
+      else if (ch === 'g') ctx.fillStyle = '#888888';
+      else continue;
+      ctx.fillRect(OFF + c * PX, OFF + r * PX, PX, PX);
+    }
   }
 }
 
-// ─── HP bar ──────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// WALKING ENGINE
+// ══════════════════════════════════════════════════════════════════
+const SCREEN_W    = 640;
+const SCREEN_H    = 480;
+const SPRITE_W    = 64;
+const SPRITE_H    = 64;
+const WALK_STEP   = 2;
+const WALK_MS     = 55;
+const FRAME_MS    = 220;
+
+let walkX    = 100;
+let walkY    = 96;
+let xDir  = 1; // 1=right -1=left
+let yDir  = 1; // 1=up -1=down
+let wFrame   = 'walkA';
+let wMood    = 'walkA';  // base mood for normal walk
+let walkTmr  = null;
+let frameTmr = null;
+
+function posCanvas(x, y, xDir, yDir) {
+  canvas.style.left      = x + 'px'; 
+  canvas.style.bottom    = y + 'px';
+  canvas.style.transform = xDir < 0 ? 'scaleX(-1)' : 'scaleX(1)';
+}
+
+function startWalk(mood) {
+  wMood = mood;
+  stopWalk();
+  drawSprite(mood === 'happy' ? 'happy' : 'walkA');
+  posCanvas(walkX, walkY, xDir, yDir);
+
+  frameTmr = setInterval(() => {
+    wFrame = wFrame === 'walkA' ? 'walkB' : 'walkA';
+    drawSprite(mood === 'happy' ? 'happy' : wFrame);
+  }, FRAME_MS);
+
+  walkTmr = setInterval(() => {
+    const speed = mood === 'happy' ? WALK_STEP * 1.5 : WALK_STEP;
+    walkX += speed * xDir;
+    walkY += speed * yDir;
+    if (walkX > SCREEN_W - SPRITE_W - 20) xDir = -1;
+    if (walkX < 20) xDir =  1;
+
+    if (walkY < 96) yDir = 1;
+    if (walkY > SCREEN_H - SPRITE_H - 20) yDir = -1;
+    posCanvas(walkX, walkY, xDir, yDir);
+  }, WALK_MS);
+}
+
+function stopWalk() {
+  clearInterval(walkTmr);
+  clearInterval(frameTmr);
+  walkTmr = frameTmr = null;
+}
+
+function showStatic(key) {
+  stopWalk();
+  drawSprite(key);
+  posCanvas(walkX, walkY, 1, 1);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HP BAR
+// ══════════════════════════════════════════════════════════════════
 const HP_MAX = 200;
 function renderHp(hp) {
   const pct = Math.min(100, Math.max(0, Math.round((hp / HP_MAX) * 100)));
-  elHpFill.style.width = pct + '%';
-  elHpVal.textContent = String(hp).padStart(3, ' ');
+  document.getElementById('hpFill').style.width = pct + '%';
+  document.getElementById('hpVal').textContent  = String(hp).padStart(3, ' ');
 }
 
-// ─── Status bar ──────────────────────────────────────────────────────────────
-function renderStatus(data) {
-  elStatName.textContent = (data.name || '--------').substring(0, 8).toUpperCase();
+// ══════════════════════════════════════════════════════════════════
+// AGE
+// ══════════════════════════════════════════════════════════════════
+let localAge = 0;
+let ageTimer = null;
+function fmtAge(s) {
+  if (s < 60)   return s + 's';
+  if (s < 3600) return Math.floor(s / 60) + 'm' + (s % 60) + 's';
+  return Math.floor(s / 3600) + 'h' + Math.floor((s % 3600) / 60) + 'm';
 }
-
-// ─── Age ticker (local, increments every second) ─────────────────────────────
-function startAgeTimer(initialAge) {
+function startAgeTimer(init) {
   clearInterval(ageTimer);
-  localAge = initialAge;
-  function fmt(s) {
-    if (s < 60) return s + 's';
-    if (s < 3600) return Math.floor(s / 60) + 'm' + (s % 60) + 's';
-    return Math.floor(s / 3600) + 'h' + Math.floor((s % 3600) / 60) + 'm';
-  }
-  elStatAge.textContent = 'AGE ' + fmt(localAge);
+  localAge = init;
+  document.getElementById('statAge').textContent = 'AGE ' + fmtAge(localAge);
   ageTimer = setInterval(() => {
     localAge++;
-    elStatAge.textContent = 'AGE ' + fmt(localAge);
+    document.getElementById('statAge').textContent = 'AGE ' + fmtAge(localAge);
   }, 1000);
 }
 
-// ─── Ticker message ──────────────────────────────────────────────────────────
-function setTicker(msg) {
-  elTicker.classList.remove('scroll');
-  elTicker.textContent = msg;
-  void elTicker.offsetWidth;
-  elTicker.classList.add('scroll');
+// ══════════════════════════════════════════════════════════════════
+// FOOTER
+// ══════════════════════════════════════════════════════════════════
+function setFooter(l, r) {
+  document.getElementById('footerLeft').textContent  = l || '';
+  document.getElementById('footerRight').textContent = r || '';
 }
 
-// ─── Footer ──────────────────────────────────────────────────────────────────
-function setFooter(left, right) {
-  elFooterLeft.textContent = left || '';
-  elFooterRight.textContent = right || '';
+// ══════════════════════════════════════════════════════════════════
+// ACTION HINT (on-screen message)
+// ══════════════════════════════════════════════════════════════════
+let hintTmr = null;
+function showHint(msg, persist) {
+  clearTimeout(hintTmr);
+  const el = document.getElementById('actionHint');
+  el.textContent = msg;
+  el.classList.remove('blink', 'show');
+  void el.offsetWidth;
+  el.classList.add('show', 'blink');
+  if (!persist) hintTmr = setTimeout(() => el.classList.remove('show'), 2500);
+}
+function hideHint() {
+  clearTimeout(hintTmr);
+  document.getElementById('actionHint').classList.remove('show');
 }
 
-// ─── Overlays ────────────────────────────────────────────────────────────────
-function showIntro()  { elIntro.classList.remove('hide'); elDead.classList.remove('show'); }
-function hideIntro()  { elIntro.classList.add('hide'); }
-function showDead(name) {
-  elDead.classList.add('show');
-  elDeadName.textContent = (name || 'CREATURE').toUpperCase() + ' IS GONE';
+// ══════════════════════════════════════════════════════════════════
+// OVERLAYS
+// ══════════════════════════════════════════════════════════════════
+function showIntro() {
+  document.getElementById('introOverlay').classList.add('show');
+  document.getElementById('deadOverlay').classList.remove('show');
 }
-function hideDead()   { elDead.classList.remove('show'); }
-
-// ─── Button states ───────────────────────────────────────────────────────────
-function setBtns(hasCreature) {
-  btnFeed.disabled  = !hasCreature;
-  btnVisit.disabled = !hasCreature;
+function showDeadScreen(name) {
+  document.getElementById('introOverlay').classList.remove('show');
+  document.getElementById('deadOverlay').classList.add('show');
+  document.getElementById('deadName').textContent =
+    (name || 'CREATURE').toUpperCase() + ' IS GONE';
+}
+function hideOverlays() {
+  document.getElementById('introOverlay').classList.remove('show');
+  document.getElementById('deadOverlay').classList.remove('show');
 }
 
-// ─── Render full state ───────────────────────────────────────────────────────
-function applyData(data, anim) {
-  state = { ...state, ...data, exists: true };
-  hideIntro();
+// ══════════════════════════════════════════════════════════════════
+// BUTTON MODE
+// mode: 'empty' | 'alive' | 'dead'
+// ══════════════════════════════════════════════════════════════════
+const btnLeft   = document.getElementById('btnLeft');
+const btnCenter = document.getElementById('btnCenter');
+const btnRight  = document.getElementById('btnRight');
+
+function setMode(m) {
+  if (m === 'alive') {
+    btnLeft.disabled   = false;
+    btnCenter.disabled = false;
+    btnRight.disabled  = false;
+    btnLeft.onclick    = onPlay;
+    btnCenter.onclick  = onFeed;
+    btnRight.onclick   = onPlay;
+  } else {
+    // empty or dead: only left = start
+    btnLeft.disabled   = false;
+    btnCenter.disabled = true;
+    btnRight.disabled  = true;
+    btnLeft.onclick    = onStart;
+    btnCenter.onclick  = null;
+    btnRight.onclick   = null;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MOOD
+// ══════════════════════════════════════════════════════════════════
+function moodKey(data) {
+  if (!data || !data.alive) return 'dead';
+  if (data.health <= 20)    return 'sick';
+  if (data.hungry)          return 'hungry';
+  if (data.health >= 80)    return 'happy';
+  return 'walkA';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// APPLY API DATA
+// ══════════════════════════════════════════════════════════════════
+let creature = null;
+let pollTmr  = null;
+
+function applyData(data) {
+  creature = data;
 
   if (!data.alive) {
     clearInterval(ageTimer);
-    clearInterval(pollTimer);
-    renderSprite('dead');
+    clearInterval(pollTmr);
+    stopWalk();
+    showStatic('dead');
     renderHp(0);
-    showDead(data.name);
-    setBtns(false);
+    showDeadScreen(data.name);
+    setMode('dead');
     setFooter('DECEASED', '');
+    hideHint();
     return;
   }
 
-  hideDead();
-  renderSprite(pickSprite(data), anim);
+  hideOverlays();
   renderHp(data.health);
-  renderStatus(data);
+  document.getElementById('statName').textContent =
+    (data.name || '--------').substring(0, 8).toUpperCase();
   startAgeTimer(data.age);
-  setBtns(true);
+  setMode('alive');
 
-  const mood = data.hungry ? 'HUNGRY' : (data.health >= 80 ? 'HAPPY' : 'OK');
-  setFooter(mood, data.hungry ? '! FEED ME' : '');
+  const mood = moodKey(data);
+
+  // hungry / sick → stop and show warning sprite
+  if (mood === 'sick' || mood === 'hungry') {
+    startWalk(mood === 'sick' ? 'walkA' : 'walkA');
+    drawSprite(mood);  // override with warning face
+    if (data.hungry) {
+      showHint('>> HUNGRY! <<', true);
+      setFooter('HUNGRY', '');
+    } else {
+      showHint('>> SICK... <<', true);
+      setFooter('SICK', '');
+    }
+  } else {
+    startWalk(mood);
+    hideHint();
+    setFooter(mood === 'happy' ? 'HAPPY' : 'OK', '');
+  }
 }
 
-// ─── API calls ───────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// API
+// ══════════════════════════════════════════════════════════════════
 async function api(method) {
-  const resp = await fetch(API, { method, headers: { Accept: 'application/json' } });
+  const resp = await fetch('/javagotchi', {
+    method,
+    headers: { Accept: 'application/json' }
+  });
   if (!resp.ok) {
     const body = await resp.json().catch(() => ({}));
     throw { status: resp.status, message: body.message || resp.statusText };
@@ -522,78 +664,138 @@ async function api(method) {
 }
 
 async function doVisit() {
-  setFooter('VISITING...', '');
   try {
     const data = await api('GET');
     applyData(data);
-    setTicker(data.name.toUpperCase() + ' — HP:' + data.health + ' AGE:' + data.age + 's' + (data.hungry ? ' — HUNGRY!' : ' — FED'));
+
   } catch (e) {
-    if (e.status === 404) { showIntro(); setBtns(false); clearInterval(pollTimer); setFooter('NO CREATURE', ''); }
-    else if (e.status === 410) { showDead(state.name); setBtns(false); clearInterval(pollTimer); setFooter('DECEASED', ''); }
-    else { setFooter('ERR ' + e.status, ''); }
-    setTicker((e.message || 'ERROR').toUpperCase());
+    if (e.status === 404) {
+      showIntro(); showStatic('empty'); setMode('empty');
+      clearInterval(pollTmr);
+      setFooter('NO CREATURE', '');
+    } else if (e.status === 410) {
+      showDeadScreen(creature ? creature.name : '');
+      showStatic('dead'); setMode('dead');
+      clearInterval(pollTmr); stopWalk();
+      setFooter('DECEASED', '');
+    } else {
+      setFooter('ERR ' + e.status, '');
+    }
+
   }
 }
 
-async function doCreate() {
+// ══════════════════════════════════════════════════════════════════
+// BUTTON HANDLERS
+// ══════════════════════════════════════════════════════════════════
+
+// LEFT / RIGHT when alive → play burst animation
+function onPlay() {
+  if (!creature || !creature.alive) return;
+  if (creature.hungry) {
+    showHint('>> HUNGRY! <<');
+    setFooter('HUNGRY', '');
+    return;
+  }
+  if (creature.health <= 64) {
+    showHint('>> TOO WEAK... <<');
+    setFooter('WEAK', '');
+    return;
+  }  
+  showHint('>> YAY! <<');
+  stopWalk();
+  let t = 0;
+  const burst = setInterval(() => {
+    t++;
+    walkX += WALK_STEP * 3 * xDir;
+    if (walkX > SCREEN_W - SPRITE_W - 20) xDir = -1;
+    if (walkX < 20)                        xDir =  1;
+    posCanvas(walkX, walkY, xDir, yDir);
+    drawSprite(t % 2 === 0 ? 'happy' : 'walkB');
+    if (t >= 22) {
+      clearInterval(burst);
+      startWalk(moodKey(creature));
+    }
+  }, WALK_MS);
+}
+
+// LEFT when empty/dead → create
+async function onStart() {
   setFooter('CREATING...', '');
-  hideDead(); hideIntro();
+  hideOverlays();
+  showStatic('empty');
   try {
     const data = await api('POST');
-    applyData(data, 'bounce');
-    setTicker('WELCOME ' + data.name.toUpperCase() + '! HP:' + data.health);
+    applyData(data);
+    showHint('>> WELCOME ' + (data.name || '').toUpperCase() + '! <<');
+
     startPoll();
   } catch (e) {
     if (e.status === 400) {
-      setTicker((e.message || 'ALREADY EXISTS').toUpperCase());
-      setFooter('EXISTS', '');
       await doVisit();
+      startPoll();
     } else {
-      setTicker((e.message || 'CANNOT CREATE').toUpperCase());
-      setFooter('ERR ' + e.status, '');
+      showIntro(); setMode('empty');
+
+      setFooter('ERROR' + e.message, '');
     }
   }
 }
 
-async function doFeed() {
+// CENTER when alive → feed
+async function onFeed() {
   setFooter('FEEDING...', '');
+  showHint('>> NOM NOM... <<');
   try {
     const data = await api('PUT');
-    applyData(data, 'bounce');
-    setTicker(data.name.toUpperCase() + ' MUNCHES HAPPILY. HP:' + data.health);
+    applyData(data);
+    showHint('>> YUM YUM! <<');
   } catch (e) {
-    if (e.status === 404) { showIntro(); setBtns(false); setFooter('NO CREATURE', ''); }
-    else if (e.status === 410) { showDead(state.name); setBtns(false); setFooter('DECEASED', ''); }
-    else { setFooter('SATED', ''); }
-    setTicker((e.message || 'CANNOT FEED').toUpperCase());
+    if (e.status === 404) {
+      showIntro(); setMode('empty'); stopWalk(); setFooter('NO CREATURE', '');
+    } else if (e.status === 410) {
+      showDeadScreen(creature ? creature.name : '');
+      setMode('dead'); stopWalk(); setFooter('DECEASED', '');
+    } else {
+      showHint('>> NOPE! <<');
+      setFooter('SATED', '');
+    }
+
   }
 }
 
-// ─── Poll every 30s ──────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// POLL
+// ══════════════════════════════════════════════════════════════════
 function startPoll() {
-  clearInterval(pollTimer);
-  pollTimer = setInterval(doVisit, 30000);
+  clearInterval(pollTmr);
+  pollTmr = setInterval(doVisit, 30000);
 }
 
-// ─── Boot ────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════════════
 (async () => {
-  renderSprite('empty');
+  drawSprite('empty');
+  posCanvas(walkX, 1);
   showIntro();
+  setMode('empty');
   setFooter('CONNECTING...', '');
   try {
     const data = await api('GET');
     applyData(data);
-    setTicker('WELCOME BACK ' + data.name.toUpperCase() + '! HP:' + data.health);
     startPoll();
   } catch (e) {
     if (e.status === 410) {
-      showDead(state.name);
-      setBtns(false);
-      setTicker((e.message || 'CREATURE IS GONE').toUpperCase());
+      showDeadScreen('');
+      showStatic('dead');
+      setMode('dead');
+
     } else {
       showIntro();
-      setBtns(false);
-      setTicker('NO CREATURE FOUND — PRESS CREATE');
+      showStatic('empty');
+      setMode('empty');
+
     }
     setFooter('READY', '');
   }
