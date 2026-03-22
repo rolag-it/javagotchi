@@ -308,9 +308,9 @@
   </div>
 
   <div class="ticker">
-    <span class="ticker-text" id="tickerLeft">Pet</span>
-    <span class="ticker-text" id="tickerCenter">Feed</span>
-    <span class="ticker-text" id="tickerRight">Play</span>
+    <span class="ticker-text" id="tickerLeft">PET</span>
+    <span class="ticker-text" id="tickerCenter">FEED</span>
+    <span class="ticker-text" id="tickerRight">PLAY</span>
   </div>
 
   <div class="controls">
@@ -490,7 +490,7 @@ function showStatic(key) {
 // ══════════════════════════════════════════════════════════════════
 // HP BAR
 // ══════════════════════════════════════════════════════════════════
-const HP_MAX = 200;
+const HP_MAX = 320;
 function renderHp(hp) {
   const pct = Math.min(100, Math.max(0, Math.round((hp / HP_MAX) * 100)));
   document.getElementById('hpFill').style.width = pct + '%';
@@ -593,7 +593,7 @@ function setMode(m) {
 // ══════════════════════════════════════════════════════════════════
 function moodKey(data) {
   if (!data || !data.alive) return 'dead';
-  if (data.health <= 20)    return 'sick';
+  if (data.health <= 64)    return 'sick';
   if (data.hungry)          return 'hungry';
   if (data.health >= 80)    return 'happy';
   return 'walkA';
