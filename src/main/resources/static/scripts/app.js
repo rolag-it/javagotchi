@@ -36,9 +36,9 @@
   const btnRight   = document.getElementById('btnRight');
 
   // ── Application state ──────────────────────────────────────────────
-  let creature = null;   // last successful API response
-  let localAge = 0;
-  let ageTimer = null;
+  let creature  = null;
+  let localAge  = 0;
+  let ageTimer  = null;
   let pollTimer = null;
   let hintTimer = null;
 
@@ -62,8 +62,8 @@
   // ── HP bar ─────────────────────────────────────────────────────────
   function renderHp(hp) {
     const pct = Math.min(100, Math.max(0, Math.round((hp / HP_MAX) * 100)));
-    elHpFill.style.width  = pct + '%';
-    elHpVal.textContent   = String(hp).padStart(3, ' ');
+    elHpFill.style.width = pct + '%';
+    elHpVal.textContent  = String(hp).padStart(3, ' ');
   }
 
   // ── Footer ─────────────────────────────────────────────────────────
@@ -112,7 +112,7 @@
     if (data.health <= 64) return 'sick';
     if (data.hungry)       return 'hungry';
     if (data.health >= 80) return 'happy';
-    return 'walkA';
+    return 'walk';
   }
 
   // ── State machine: button wiring ────────────────────────────────────
@@ -161,9 +161,7 @@
     const mood = moodKey(data);
 
     if (mood === 'hungry' || mood === 'sick') {
-      // keep walking but override the face with the warning sprite
-      Sprites.startWalk('walkA');
-      Sprites.draw(mood);
+      Sprites.startWalk(mood);
       showHint(mood === 'hungry' ? '>> HUNGRY! <<' : '>> SICK... <<', true);
       setFooter(mood === 'hungry' ? 'HUNGRY' : 'SICK');
     } else {
@@ -218,7 +216,7 @@
 
   // ── Button handlers ──────────────────────────────────────────────────
 
-  // LEFT / RIGHT when alive → play burst
+  // LEFT / RIGHT when alive → rejoice burst, then resume mood
   function onPlay() {
     if (!creature?.alive) return;
 
@@ -234,18 +232,12 @@
     }
 
     showHint('>> YAY! <<');
-    Sprites.stopWalk();
-
-    let t = 0;
-    const burst = setInterval(() => {
-      t++;
-      Sprites.burst();
-      Sprites.draw(t % 2 === 0 ? 'happy' : 'walkB');
-      if (t >= 22) {
-        clearInterval(burst);
-        Sprites.startWalk(moodKey(creature));
-      }
-    }, Sprites.WALK_MS);
+    // play rejoice animation for ~1.3 s (6 frames × 100 ms × 3 cycles ≈ 2600 ms)
+    // then return to the creature's current mood
+    Sprites.startWalk('rejoice');
+    setTimeout(() => {
+      if (creature?.alive) Sprites.startWalk(moodKey(creature));
+    }, 3600);
   }
 
   // LEFT when empty / dead → create
@@ -297,7 +289,14 @@
 
   // ── Boot ───────────────────────────────────────────────────────────
   async function boot() {
-    Sprites.init(document.getElementById('spriteCanvas'));
+    // init() is now async — waits for the sprite sheet image to load
+    try {
+      await Sprites.init(document.getElementById('spriteCanvas'));
+    } catch (e) {
+      console.error('Sprite sheet failed to load:', e.message);
+      // non-fatal: canvas stays blank but the rest of the UI works
+    }
+
     Sprites.showStatic('empty');
     Sprites.updatePosition();
 
